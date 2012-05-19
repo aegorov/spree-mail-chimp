@@ -1,4 +1,4 @@
-Spree::AppConfiguration.class_eval do
+AppConfiguration.class_eval do
 
   preference :mailchimp_double_opt_in, :boolean, :default => false
   preference :mailchimp_send_welcome,  :boolean, :default => false
