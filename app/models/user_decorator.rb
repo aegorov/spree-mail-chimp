@@ -2,6 +2,7 @@ User.class_eval do
 
   before_create :mailchimp_add_to_mailing_list
   before_update :mailchimp_update_in_mailing_list, :if => :is_mail_list_subscriber_changed?
+  before_update :mailchimp_update_email_in_mailing_list, :if => :email_changed?
 
   attr_accessible :is_mail_list_subscriber
 
@@ -16,7 +17,7 @@ User.class_eval do
         hominid.list_subscribe(mailchimp_list_id, self.email, mailchimp_merge_vars, 'html', *mailchimp_subscription_opts)
         logger.debug "Fetching new mailchimp subscriber info"
 
-        assign_mailchimp_subscriber_id if self.mailchimp_subscriber_id.blank?
+        assign_mailchimp_subscriber_id
       rescue Hominid::APIError => e
         logger.warn "SpreeMailChimp: Failed to create contact in Mailchimp: #{e.message}"
       end
@@ -30,7 +31,8 @@ User.class_eval do
     if !self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present?
       begin
         # TODO: Get rid of those magic values. Maybe add them as Spree::Config options?
-        hominid.list_unsubscribe(mailchimp_list_id, self.email, false, false, true)
+        hominid.list_unsubscribe(mailchimp_list_id, self.mailchimp_subscriber_id, false, false, true)
+        self.mailchimp_subscriber_id = nil
         logger.debug "Removing mailchimp subscriber"
       rescue Hominid::APIError => e
         logger.warn "SpreeMailChimp: Failed to remove contact from Mailchimp: #{e.message}"
@@ -41,13 +43,31 @@ User.class_eval do
   # Updates Mailchimp
   #
   # Returns nothing
-  # TODO: Update the user's email address in Mailchimp if it changes.
-  #       Look at listMemberUpdate
+ 
   def mailchimp_update_in_mailing_list
     if self.is_mail_list_subscriber?
       mailchimp_add_to_mailing_list
     elsif !self.is_mail_list_subscriber?
       mailchimp_remove_from_mailing_list
+    end
+  end
+
+  # Update user email Mailchimp mailing list
+  #
+  # Returns nothing
+  def mailchimp_update_email_in_mailing_list
+    if self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present?
+      begin
+        response = hominid.list_update_member(
+                            mailchimp_list_id,
+                            self.mailchimp_subscriber_id, 
+                            {:EMAIL => self.email},
+                            'html', true)
+        assign_mailchimp_subscriber_id
+        logger.debug "Update user email in mail list"
+      rescue Hominid::APIError => e
+        logger.warn "SpreeMailChimp: Failed to update user email in Mailchimp mail list: #{e.message}"
+      end
     end
   end
 
