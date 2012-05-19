@@ -1,4 +1,4 @@
-Spree::Core::Engine.routes.draw do
+Rails.application.routes.draw do
   resources :subscriptions, :only => :create
 
   namespace :admin do

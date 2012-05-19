@@ -1,4 +1,4 @@
-Spree::User.class_eval do
+User.class_eval do
 
   before_create :mailchimp_add_to_mailing_list
   before_update :mailchimp_update_in_mailing_list, :if => :is_mail_list_subscriber_changed?
