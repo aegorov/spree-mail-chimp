@@ -1,7 +1,7 @@
 module SpreeMailChimp
   module Generators
     class InstallGenerator < Rails::Generators::Base
-
+=begin
       def add_javascripts
         append_file "app/assets/javascripts/store/all.js", "//= require store/spree_mail_chimp\n"
       end
@@ -9,7 +9,7 @@ module SpreeMailChimp
       def add_stylesheets
         inject_into_file "app/assets/stylesheets/store/all.css", " *= require store/spree_mail_chimp\n", :before => /\*\//, :verbose => true
       end
-
+=end
       def add_migrations
         run 'rake railties:install:migrations FROM=spree_mail_chimp'
       end
