@@ -1,15 +1,25 @@
 module SpreeMailChimp
   module Generators
     class InstallGenerator < Rails::Generators::Base
-=begin
+
       def add_javascripts
-        append_file "app/assets/javascripts/store/all.js", "//= require store/spree_mail_chimp\n"
+        res = ask "Would you like to add the js assets now? [Y/n]"
+        if res == "" || res.downcase == "y"
+          append_file "app/assets/javascripts/store/all.js", "//= require store/spree_mail_chimp\n"
+        else
+          puts "Skiping adding js assets! Don't forget do it if you need"
+        end
       end
 
       def add_stylesheets
-        inject_into_file "app/assets/stylesheets/store/all.css", " *= require store/spree_mail_chimp\n", :before => /\*\//, :verbose => true
+        res = ask "Would you like to add the css assets now? [Y/n]"
+        if res == "" || res.downcase == "y"
+          inject_into_file "app/assets/stylesheets/store/all.css", " *= require store/spree_mail_chimp\n", :before => /\*\//, :verbose => true
+        else
+          puts "Skiping adding css assets! Don't forget do it if you need"
+        end
       end
-=end
+
       def add_migrations
         run 'rake railties:install:migrations FROM=spree_mail_chimp'
       end
