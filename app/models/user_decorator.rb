@@ -12,7 +12,7 @@ User.class_eval do
   #
   # Returns ?
   def mailchimp_add_to_mailing_list
-    if self.is_mail_list_subscriber?
+    if self.is_mail_list_subscriber? && !Spree::Config.get(:mailchimp_api_key).blank? && !mailchimp_list_id.blank?
       begin
         hominid.list_subscribe(mailchimp_list_id, self.email, mailchimp_merge_vars, 'html', *mailchimp_subscription_opts)
         logger.debug "Fetching new mailchimp subscriber info"
@@ -27,8 +27,8 @@ User.class_eval do
   # Removes the User from the Mailchimp mailing list
   #
   # Returns ?
-  def mailchimp_remove_from_mailing_list
-    if !self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present?
+  def mailchimp_remove_from_mailing_list    
+    if !self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present? && !Spree::Config.get(:mailchimp_api_key).blank? && !mailchimp_list_id.blank?
       begin
         # TODO: Get rid of those magic values. Maybe add them as Spree::Config options?
         hominid.list_unsubscribe(mailchimp_list_id, self.mailchimp_subscriber_id, false, false, true)
@@ -56,7 +56,7 @@ User.class_eval do
   #
   # Returns nothing
   def mailchimp_update_email_in_mailing_list
-    if self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present?
+    if self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present? && !Spree::Config.get(:mailchimp_api_key).blank? && !mailchimp_list_id.blank?
       begin
         response = hominid.list_update_member(
                             mailchimp_list_id,
@@ -68,7 +68,7 @@ User.class_eval do
       rescue Hominid::APIError => e
         logger.warn "SpreeMailChimp: Failed to update user email in Mailchimp mail list: #{e.message}"
       end
-    end
+    end  
   end
 
   # Retrieves and stores the Mailchimp member id
